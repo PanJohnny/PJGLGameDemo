@@ -12,6 +12,7 @@ import com.panjohnny.pjgl.api.object.components.Size;
 import com.panjohnny.pjgl.api.object.components.SpriteRenderer;
 import com.panjohnny.pjgl.core.adapters.MouseAdapter;
 
+import javax.swing.*;
 import java.awt.Image;
 
 public class Arnold extends GameObject {
@@ -30,6 +31,8 @@ public class Arnold extends GameObject {
 
     public int score = 0;
 
+    private long lastTime;
+
     @Override
     public void update(long deltaTime) {
         // Keep in super.update(deltaTime) is not needed in this scenario, we don't have any component that requires updating, but it is good practice not to remove it.
@@ -42,7 +45,9 @@ public class Arnold extends GameObject {
         position.x = mouse.getX();
         position.y = mouse.getY();
 
-        if (mouse.isKeyDown(MouseAdapter.BUTTON_LEFT)) {
+        // Added time limiter
+        if (mouse.isKeyDown(MouseAdapter.BUTTON_LEFT) && lastTime + 100L <= System.currentTimeMillis()) {
+            lastTime = System.currentTimeMillis();
             final JDKeyboard keyboard = PJGL.getInstance().getKeyboard();
 
             // Get the direction which can be combined.
@@ -78,5 +83,8 @@ public class Arnold extends GameObject {
                 PJGL.getInstance().getManager().queueAddition(new Projectile(this, direction));
             }
         }
+
+        // Display score in game name
+        ((JFrame) PJGL.getInstance().getWindow()).setTitle("My cool game window title! Score: " + score);
     }
 }

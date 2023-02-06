@@ -33,13 +33,15 @@ public class Projectile extends GameObject {
         position.y = arnold.position.y;
     }
 
+    private int time = 1;
     @Override
     public void update(long deltaTime) {
         // In this case collider needs update to check for collisions.
         super.update(deltaTime);
 
-        // 10 px/frame.
-        final int velocity = 10;
+        // shooting fast and slowing down
+        final int velocity = Math.max(10, 100/time);
+        time++;
 
         // Move.
         position.add(velocity * direction.x, velocity * direction.y);

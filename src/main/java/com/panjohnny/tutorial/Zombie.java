@@ -62,16 +62,32 @@ public class Zombie extends GameObject {
                     PJGL.getInstance().getManager().queueRemoval(o);
                 }
 
-                PJGL.getInstance().getManager().queueAddition(new TextDisplay("Game Over!", 100, 100));
-                PJGL.getInstance().getManager().queueAddition(new TextDisplay("Final score: " + arnold.score, 100, 200));
+                PJGL.getInstance().getManager().queueAddition(new Background());
+                PJGL.getInstance().getManager().queueAddition(new TextDisplay("Game Over!", 150, 150));
+                PJGL.getInstance().getManager().queueAddition(new TextDisplay("Final score: " + arnold.score, 150, 200));
+                PJGL.getInstance().getManager().queueAddition(new TextDisplay("Previous best score: " + Main.bestScore, 150, 230));
+                if (Main.bestScore < arnold.score) {
+                    Main.bestScore = arnold.score;
+                }
             } else {
-                // The zombie got hit by projectile.
-                PJGL.getInstance().getManager().queueRemoval(this);
 
+
+                boolean onlyZombies = true;
                 // Remove projectile / projectiles
                 for (GameObject o : collider.getCollisions()) {
-                    PJGL.getInstance().getManager().queueRemoval(o);
+                    if (!(o instanceof Zombie)) {
+                        PJGL.getInstance().getManager().queueRemoval(o);
+                        onlyZombies = false;
+                    }
                 }
+
+                if (onlyZombies)
+                    return;
+
+                // The zombie got hit by projectile.
+                PJGL.getInstance().getManager().queueRemoval(this);
+                Main.hit.getClip().setFramePosition(0);
+                Main.hit.play();
 
                 final JDWindow window = PJGL.getInstance().getWindow();
 
