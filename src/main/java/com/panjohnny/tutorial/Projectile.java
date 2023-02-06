@@ -1,38 +1,56 @@
 package com.panjohnny.tutorial;
 
-import com.panjohnny.pjgl.adapt.desktop.JDMouse;
+import com.panjohnny.pjgl.adapt.desktop.JDWindow;
 import com.panjohnny.pjgl.api.PJGL;
 import com.panjohnny.pjgl.api.asset.Sprite;
 import com.panjohnny.pjgl.api.asset.img.SpriteUtil;
 import com.panjohnny.pjgl.api.object.GameObject;
+import com.panjohnny.pjgl.api.object.components.Collider;
 import com.panjohnny.pjgl.api.object.components.Position;
 import com.panjohnny.pjgl.api.object.components.Size;
 import com.panjohnny.pjgl.api.object.components.SpriteRenderer;
 
-import java.awt.*;
+import java.awt.Image;
 
-public class Arnold extends GameObject {
-    public static final Sprite<Image> SPRITE = SpriteUtil.createImageSprite("player", "/arnold.png");
+public class Projectile extends GameObject {
+    public static final Sprite<Image> SPRITE = SpriteUtil.createImageSprite("projectile", "/projectile.png");
 
-    // Position of Arnold on screen. (in px)
-    public Position position = addComponent(new Position(this, 100, 100));
+    // Spawn out of the screen.
+    public Position position = addComponent(new Position(this, -100, -100));
 
-    // Size (to hint renderer how large should Arnold be). (in px)
-    public Size size = addComponent(new Size(this, 100, 100));
+    public Size size = addComponent(new Size(this, 20, 20));
 
-    // This component will make sure that Arnold gets rendered.
     public SpriteRenderer renderer = addComponent(new SpriteRenderer(this, SPRITE));
+
+    // Collider for future use
+    public Collider collider = addComponent(new Collider(this));
+
+    private final Position.Direction direction;
+    public Projectile(Arnold arnold, Position.Direction direction) {
+        this.direction = direction;
+
+        position.x = arnold.position.x;
+        position.y = arnold.position.y;
+    }
 
     @Override
     public void update(long deltaTime) {
-        // Keep in super.update(deltaTime) is not needed in this scenario, we don't have any component that requires updating, but it is good practice not to remove it.
+        // In this case collider needs update to check for collisions.
         super.update(deltaTime);
 
-        // Get the mouse.
-        final JDMouse mouse = PJGL.getInstance().getMouse();
+        // 10 px/frame.
+        final int velocity = 10;
 
-        // Fix the position.
-        position.x = mouse.getX();
-        position.y = mouse.getY();
+        // Move.
+        position.add(velocity * direction.x, velocity * direction.y);
+
+        // Check if it is still in window.
+        final JDWindow window = PJGL.getInstance().getWindow();
+
+        // Remove the element if out of screen.
+        if (position.x < 0 || position.x > window.getWidth() || position.y < 0 || position.y > window.getHeight()) {
+            // Queue removal to prevent ConcurrentModificationException
+            PJGL.getInstance().getManager().queueRemoval(this);
+        }
     }
 }
